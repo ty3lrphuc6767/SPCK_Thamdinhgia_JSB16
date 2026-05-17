@@ -18,7 +18,7 @@
       <div class="container topbar__inner">
         <span class="topbar__text">
           📞 Hotline: <strong>0901204666</strong> &nbsp;|&nbsp; 📧
-          thamdinhgiabaotindn@gmail.com &nbsp;|&nbsp; 🕐 Thứ 2 – Thứ 6: 07:30 –
+          Thamdinhgiabaotindn@gmail.com &nbsp;|&nbsp; 🕐 Thứ 2 – Thứ 6: 07:30 –
           17:00
         </span>
         <div class="topbar__links">
@@ -232,19 +232,62 @@
     </form>
   </div>
 </div>
-<!-- FORM ĐĂNG BÀI -->
+<!-- MODAL CHỌN KIỂU ĐĂNG BÀI -->
+<div id="choicePostModal" class="modal">
+  <div class="modal__box">
+    <button class="modal__close" data-close="choicePostModal">&times;</button>
+
+    <h3>Bạn muốn đăng bài bằng cách nào?</h3>
+    <p class="modal__desc">
+      Chọn hình thức đăng bài tin tức.
+    </p>
+
+    <div class="post-choice-grid">
+      <button id="choosePostLinkBtn" class="btn btn--primary" type="button">
+        Đăng bài bằng link
+      </button>
+
+      <button id="choosePostWriteBtn" class="btn btn--outline-dark" type="button">
+        Đăng bài bằng cách viết
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ĐĂNG BÀI -->
 <div id="postModal" class="modal">
   <div class="modal__box">
     <button class="modal__close" data-close="postModal">&times;</button>
 
     <h3>Đăng bài tin tức</h3>
-    <p class="modal__desc">
+    <p class="modal__desc" id="postModalDesc">
       Nhập tiêu đề, đường dẫn và mô tả ngắn của bài viết.
     </p>
 
     <form id="postArticleForm" class="modal-form">
+      <input
+  type="url"
+  id="postImageUrl"
+  placeholder="Link ảnh bài viết, ví dụ: https://...jpg hoặc https://...png"
+/>
       <input type="text" id="postTitle" placeholder="Tiêu đề bài viết" required />
-      <input type="url" id="postUrl" placeholder="Link bài viết, ví dụ: https://..." required />
+
+      <div id="postLinkGroup">
+        <input
+          type="url"
+          id="postUrl"
+          placeholder="Link bài viết, ví dụ: https://..."
+        />
+      </div>
+
+      <div id="postWriteGroup" style="display: none;">
+        <textarea
+          id="postContent"
+          rows="6"
+          placeholder="Nhập vào bài viết bạn muốn đăng"
+        ></textarea>
+      </div>
+
       <textarea id="postDesc" rows="4" placeholder="Mô tả ngắn"></textarea>
 
       <button type="submit" class="btn btn--primary">
@@ -275,8 +318,8 @@
 
         <div class="contact-item">
           <strong>Email</strong>
-          <a href="mailto:thamdinhgiabaotindn@gmail.com">
-            thamdinhgiabaotindn@gmail.com
+          <a href="mailto:Thamdinhgiabaotindn@gmail.com">
+            Thamdinhgiabaotindn@gmail.com
           </a>
         </div>
 
@@ -294,7 +337,7 @@
 
         <div class="contact-actions">
           <a href="tel:0901204666" class="btn btn--primary">Gọi ngay</a>
-          <a href="mailto:thamdinhgiabaotindn@gmail.com" class="btn btn--outline-dark">
+          <a href="mailto:Thamdinhgiabaotindn@gmail.com" class="btn btn--outline-dark">
             Gửi email
           </a>
         </div>

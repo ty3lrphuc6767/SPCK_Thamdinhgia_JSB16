@@ -3,7 +3,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   initStickyHeader();
   initMobileMenu();
-  initNavActive();
   initTabs();
   initNewsSystem();
   initContactForm();
@@ -48,29 +47,7 @@ function initMobileMenu() {
     });
   });
 }
-// ====================== NAV ACTIVE STATE ======================
-function initNavActive() {
-  const navLinks = document.querySelectorAll(".nav .nav__link");
 
-  if (!navLinks.length) return;
-
-  function setActiveLink(activeLink) {
-    navLinks.forEach(function (link) {
-      link.classList.remove("nav__link--active");
-    });
-
-    activeLink.classList.add("nav__link--active");
-
-    // Bỏ trạng thái focus sau khi click để không bị giữ màu giả
-    activeLink.blur();
-  }
-
-  navLinks.forEach(function (link) {
-    link.addEventListener("click", function () {
-      setActiveLink(link);
-    });
-  });
-}
 // ====================== SERVICE TABS ======================
 function initTabs() {
   const tabs = document.querySelectorAll(".tab");
@@ -142,12 +119,16 @@ function initTabs() {
 }
 // ====================== NEWS ADMIN SYSTEM ======================
 
+// ====================== NEWS ADMIN SYSTEM ======================
+
 function initNewsSystem() {
-  const ADMIN_SECRET_CODE = "123456"; // Mã quản trị viên đơn giản (không an toàn, chỉ dùng cho demo)
+  const ADMIN_SECRET_CODE = "123456";
   const ADMIN_PASSWORD = "123456";
 
   const adminLoginBtn = document.getElementById("adminLoginBtn");
   const adminModal = document.getElementById("adminModal");
+
+  const choicePostModal = document.getElementById("choicePostModal");
   const postModal = document.getElementById("postModal");
 
   const adminRegisterForm = document.getElementById("adminRegisterForm");
@@ -157,20 +138,36 @@ function initNewsSystem() {
   const logoutAdminBtn = document.getElementById("logoutAdminBtn");
   const newsList = document.getElementById("newsList");
 
+  const choosePostLinkBtn = document.getElementById("choosePostLinkBtn");
+  const choosePostWriteBtn = document.getElementById("choosePostWriteBtn");
+
+  const postModalDesc = document.getElementById("postModalDesc");
+  const postLinkGroup = document.getElementById("postLinkGroup");
+  const postWriteGroup = document.getElementById("postWriteGroup");
+
+  const postUrlInput = document.getElementById("postUrl");
+  const postContentInput = document.getElementById("postContent");
+
+  let postMode = "link";
+
   if (!newsList) return;
 
   const defaultNews = [
     {
       id: 1,
+      type: "link",
       title: "Dịch vụ thẩm định giá bất động sản chuyên nghiệp",
       url: "#",
+      content: "",
       desc: "Thông tin tổng quan về dịch vụ thẩm định giá bất động sản cho cá nhân, doanh nghiệp và tổ chức tín dụng.",
       date: "2026-01-01"
     },
     {
       id: 2,
+      type: "link",
       title: "Thẩm định giá máy móc thiết bị và tài sản doanh nghiệp",
       url: "#",
+      content: "",
       desc: "Giải pháp xác định giá trị máy móc, dây chuyền sản xuất, phương tiện vận tải và tài sản cố định.",
       date: "2026-01-02"
     }
@@ -214,6 +211,51 @@ function initNewsSystem() {
     modal.classList.remove("modal--open");
   }
 
+  function escapeHTML(text) {
+    return String(text)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttribute(text) {
+    return String(text).replaceAll('"', "%22").replaceAll("'", "%27");
+  }
+
+  function setPostMode(mode) {
+    postMode = mode;
+
+    if (postArticleForm) {
+      postArticleForm.reset();
+    }
+
+    if (mode === "link") {
+      if (postModalDesc) {
+        postModalDesc.textContent = "Nhập tiêu đề, đường dẫn và mô tả ngắn của bài viết.";
+      }
+
+      if (postLinkGroup) postLinkGroup.style.display = "block";
+      if (postWriteGroup) postWriteGroup.style.display = "none";
+
+      if (postUrlInput) postUrlInput.required = true;
+      if (postContentInput) postContentInput.required = false;
+    }
+
+    if (mode === "write") {
+      if (postModalDesc) {
+        postModalDesc.textContent = "Nhập tiêu đề, nội dung bài viết và mô tả ngắn.";
+      }
+
+      if (postLinkGroup) postLinkGroup.style.display = "none";
+      if (postWriteGroup) postWriteGroup.style.display = "block";
+
+      if (postUrlInput) postUrlInput.required = false;
+      if (postContentInput) postContentInput.required = true;
+    }
+  }
+
   function updateAdminUI() {
     const isAdmin = getAdminStatus();
     const adminOnlyElements = document.querySelectorAll(".admin-only");
@@ -244,17 +286,36 @@ function initNewsSystem() {
 
     newsList.innerHTML = posts
       .map(function (post) {
+        const type = post.type || "link";
+
+        const contentHTML =
+          type === "write"
+            ? `<div class="news-inline-content">${escapeHTML(post.content || "")}</div>`
+            : "";
+            const imageHTML = post.imageUrl
+  ? `<img src="${escapeAttribute(post.imageUrl)}" alt="${escapeAttribute(post.title)}" class="news-card__image" />`
+  : "";
+
+        const actionHTML =
+          type === "write"
+            ? `<span class="news-link news-link--text">Bài viết nhập trực tiếp</span>`
+            : `<a href="${escapeAttribute(post.url || "#")}" target="_blank" rel="noopener noreferrer" class="news-link">
+                Xem bài viết
+              </a>`;
+
         return `
           <article class="news-card">
             <div class="news-card__content">
-              <span class="news-card__date">${post.date || ""}</span>
-              <h3>${escapeHTML(post.title)}</h3>
-              <p>${escapeHTML(post.desc || "")}</p>
+             ${imageHTML}
+
+<span class="news-card__date">${post.date || ""}</span>
+<h3>${escapeHTML(post.title)}</h3>
+<p>${escapeHTML(post.desc || "")}</p>
+
+              ${contentHTML}
 
               <div class="news-card__actions">
-                <a href="${escapeAttribute(post.url)}" target="_blank" rel="noopener noreferrer" class="news-link">
-                  Xem bài viết
-                </a>
+                ${actionHTML}
 
                 ${
                   isAdmin
@@ -269,19 +330,6 @@ function initNewsSystem() {
       .join("");
   }
 
-  function escapeHTML(text) {
-    return String(text)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  function escapeAttribute(text) {
-    return String(text).replaceAll('"', "%22").replaceAll("'", "%27");
-  }
-
   if (adminLoginBtn) {
     adminLoginBtn.addEventListener("click", function () {
       openModal(adminModal);
@@ -290,13 +338,29 @@ function initNewsSystem() {
 
   if (postArticleBtn) {
     postArticleBtn.addEventListener("click", function () {
+      openModal(choicePostModal);
+    });
+  }
+
+  if (choosePostLinkBtn) {
+    choosePostLinkBtn.addEventListener("click", function () {
+      setPostMode("link");
+      closeModal(choicePostModal);
+      openModal(postModal);
+    });
+  }
+
+  if (choosePostWriteBtn) {
+    choosePostWriteBtn.addEventListener("click", function () {
+      setPostMode("write");
+      closeModal(choicePostModal);
       openModal(postModal);
     });
   }
 
   if (logoutAdminBtn) {
     logoutAdminBtn.addEventListener("click", function () {
-      const confirmLogout = confirm("Anh có chắc muốn đăng xuất quản trị không?");
+      const confirmLogout = confirm("Mày có chắc muốn đăng xuất quản trị không?");
 
       if (!confirmLogout) return;
 
@@ -331,17 +395,17 @@ function initNewsSystem() {
       const adminCode = document.getElementById("adminCode").value.trim();
 
       if (!name || !email || !password || !adminCode) {
-        alert("Anh nhập đủ thông tin quản trị giúp em.");
+        alert("Mày nhập đủ thông tin quản trị đi.");
+        return;
+      }
+
+      if (password !== ADMIN_PASSWORD) {
+        alert("Mật khẩu quản trị viên không đúng.");
         return;
       }
 
       if (adminCode !== ADMIN_SECRET_CODE) {
         alert("Mã quản trị viên không đúng.");
-        return;
-      }
-
-      if (password.length < 6) {
-        alert("Mật khẩu nên có ít nhất 6 ký tự.");
         return;
       }
 
@@ -358,7 +422,7 @@ function initNewsSystem() {
       closeModal(adminModal);
       updateAdminUI();
 
-      alert("Đăng nhập quản trị thành công. Anh có thể đăng bài ở mục Tin tức.");
+      alert("Đăng nhập quản trị thành công. Mày có thể đăng bài ở mục Tin tức.");
     });
   }
 
@@ -367,28 +431,43 @@ function initNewsSystem() {
       event.preventDefault();
 
       if (!getAdminStatus()) {
-        alert("Anh cần đăng nhập quản trị viên trước.");
+        alert("Mày cần đăng nhập quản trị viên trước.");
         return;
       }
 
       const title = document.getElementById("postTitle").value.trim();
       const url = document.getElementById("postUrl").value.trim();
+      const content = document.getElementById("postContent").value.trim();
       const desc = document.getElementById("postDesc").value.trim();
+      const imageUrl = document.getElementById("postImageUrl").value.trim();
 
-      if (!title || !url) {
-        alert("Tiêu đề và link bài viết là bắt buộc.");
+      if (!title) {
+        alert("Tiêu đề bài viết là bắt buộc.");
+        return;
+      }
+
+      if (postMode === "link" && !url) {
+        alert("Link bài viết là bắt buộc.");
+        return;
+      }
+
+      if (postMode === "write" && !content) {
+        alert("Nội dung bài viết là bắt buộc.");
         return;
       }
 
       const posts = getNewsPosts();
 
       const newPost = {
-        id: Date.now(),
-        title: title,
-        url: url,
-        desc: desc,
-        date: new Date().toLocaleDateString("vi-VN")
-      };
+  id: Date.now(),
+  type: postMode,
+  title: title,
+  url: postMode === "link" ? url : "#",
+  content: postMode === "write" ? content : "",
+  desc: desc,
+  imageUrl: imageUrl,
+  date: new Date().toLocaleDateString("vi-VN")
+};
 
       posts.unshift(newPost);
       saveNewsPosts(posts);
@@ -407,12 +486,12 @@ function initNewsSystem() {
     if (!deleteBtn) return;
 
     if (!getAdminStatus()) {
-      alert("Anh cần đăng nhập quản trị viên trước.");
+      alert("Mày cần đăng nhập quản trị viên trước.");
       return;
     }
 
     const postId = Number(deleteBtn.getAttribute("data-id"));
-    const confirmDelete = confirm("Anh có chắc muốn xóa bài này không?");
+    const confirmDelete = confirm("Mày có chắc muốn xóa bài này không?");
 
     if (!confirmDelete) return;
 
@@ -447,7 +526,7 @@ function initContactForm() {
       return;
     }
 
-    const companyEmail = "thamdinhgiabaotindn@gmail.com";
+    const companyEmail = "Thamdinhgiabaotindn@gmail.com";
     const subject = encodeURIComponent("Yêu cầu tư vấn thẩm định giá từ website");
 
     const body = encodeURIComponent(
